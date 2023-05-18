@@ -4,6 +4,32 @@
 
 // t_global			*my_global;
 
+void ft_free2(char **str)
+{
+    int i;
+    
+    i = 0;
+    while(str[i])
+    {
+        free(str[i]);
+        i++;
+    }
+    free(str);
+}
+
+void ft_free_cmd(t_cmd *cmd)
+{
+    while(cmd)
+    {
+        ft_free2(cmd->herdoc);
+        ft_free2(cmd->cmd);
+        free(cmd);
+        cmd = cmd->next;
+    }
+    free(cmd);
+}
+
+
 int	ther_are_pipe(char *str)
 {
 	int	i;
@@ -125,17 +151,20 @@ int	main(int argc, char **argv, char **env)
 			if (str_2[0])
 			{
 				cmd = ft_split_them(str_2);
-				commands = split_to_commands(cmd);
-				if (commands == NULL)
-					continue ;
-				tmp = commands;
-				print_cmd(commands);
-				 if (commands->outfile != -1 && commands->outfile != -1)
-					exec_cmd(mini, commands, env);
+				 commands = split_to_commands(cmd);
+				// if (commands == NULL)
+				// 	continue ;
+				// tmp = commands;
+				// print_cmd(commands);
+				//  if (commands->outfile != -1 && commands->outfile != -1)
+				// 	exec_cmd(mini, commands, env);
 			}
 		}
 		add_history(str);
 		free(str);
+        free(str_2);
+        list_free(cmd);
+        //ft_free_cmd(commands);
 	}
 	
 }

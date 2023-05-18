@@ -38,152 +38,138 @@ int	my_token(char *s)
 	return (token);
 }
 
+void	initiate_variables(t_var_them **vr)
+{
+	(*vr)->check = 0;
+	(*vr)->check_q = 0;
+	(*vr)->quotes = 0;
+	(*vr)->node = NULL;
+	(*vr)->st = NULL;
+	(*vr)->j = 0;
+	(*vr)->i = 0;
+	(*vr)->e = 0;
+	(*vr)->token = 0;
+	(*vr)->k = 0;
+}
+
 t_list	*ft_split_them(char *str)
 {
-	t_list	*s;
-	int		i;
-	int		e;
-	char	*node;
-	char	*st;
-	int		j;
-	int		k;
-	int		check;
-	int		token;
-	int		quotes;
-	int		check_q;
+	t_list		*s;
+	t_var_them	*t;
 
-	check = 0;
-	check_q = 0;
-	quotes = 0;
-	node = NULL;
-	st = NULL;
-	s = NULL;
-	j = 0;
-	i = 0;
-	e = 0;
-	token = 0;
-	k = 0;
-	while (str[i])
+	
+    t = malloc(sizeof(t_var_them));
+	initiate_variables(&t);
+	while (str[t->i])
 	{
-		k = i;
-		while (str[i] && !find_spliter(str[i], "|<> \t"))
+		t->k = t->i;
+		while (str[t->i] && !find_spliter(str[t->i], "|<> \t"))
 		{
-			if (str[i] == 34 || str[i] == 39)
+			if (str[t->i] == 34 || str[t->i] == 39)
 			{
-				while (str[i] == 34 || str[i] == 39)
+				while (str[t->i] == 34 || str[t->i] == 39)
 				{
-					quotes = str[i];
-					i++;
-					while (str[i] && (str[i] != quotes))
-						i++;
+					t->quotes = str[t->i];
+					t->i++;
+					while (str[t->i] && (str[t->i] != t->quotes))
+						t->i++;
 				}
 			}
 			else
-			{
-				//for alocation
-				i++;
-			}
+				t->i++;
 		}
-		//if don't find the spliter in the front
-		if (i - k != 0)
+		if (t->i - t->k != 0)
 		{
-			//the alocate
-			node = malloc(i - k + 1);
-			i = k;
-			j = 0;
-			//fill our node
-			while (str[i] && !find_spliter(str[i], "|<> \t"))
+			t->node = malloc(t->i - t->k + 1);
+			t->i = t->k;
+			t->j = 0;
+			while (str[t->i] && !find_spliter(str[t->i], "|<> \t"))
 			{
-				if (str[i] == 34 || str[i] == 39)
+				if (str[t->i] == 34 || str[t->i] == 39)
 				{
-					while (str[i] == 34 || str[i] == 39)
+					while (str[t->i] == 34 || str[t->i] == 39)
 					{
-						node[j] = str[i];
-						quotes = str[i];
-						i++;
-						j++;
-						while (str[i] && (str[i] != quotes))
+						t->node[t->j] = str[t->i];
+						t->quotes = str[t->i];
+						t->i++;
+						t->j++;
+						while (str[t->i] && (str[t->i] != t->quotes))
 						{
-							node[j] = str[i];
-							j++;
-							i++;
+							t->node[t->j] = str[t->i];
+							t->j++;
+							t->i++;
 						}
-						printf("->>>>%c\n", str[i]);
-						node[j] = str[i];
-						j++;
-						i++;
-						node[j] = 0;
+						t->node[t->j] = str[t->i];
+						t->j++;
+						t->i++;
 					}
 				}
 				else
 				{
-					{
-						node[j] = str[i];
-						j++;
-						i++;
-					}
-					node[j] = 0;
+						t->node[t->j] = str[t->i];
+						t->j++;
+						t->i++;	
 				}
+                t->node[t->j]=0;
 			}
-			printf("------->%s\n", node);
-			//to be here just on time for creat the frist node
-			if (check == 0)
+			if (t->check == 0)
 			{
-				s = ft_lstnew(string_no_quotes(node), 0);
-				check = 1;
+				s = ft_lstnew(string_no_quotes(t->node), 0);
+				t->check = 1;
 			}
-			//her for the rest
 			else
-				ft_lstadd_back(&s, ft_lstnew(string_no_quotes(node), 0));
+				ft_lstadd_back(&s, ft_lstnew(string_no_quotes(t->node), 0));
 		}
 		else
 		{
-			k = i;
-			j = 0;
-			while (str[i] && find_spliter(str[i], "|<> \t"))
+			t->k = t->i;
+			t->j = 0;
+			while (str[t->i] && find_spliter(str[t->i], "|<> \t"))
 			{
-				if (find_spliter(str[i], "|<>"))
-					j++;
-				i++;
+				if (find_spliter(str[t->i], "|<>"))
+					t->j++;
+				t->i++;
 			}
-			if (j != 0)
+			if (t->j != 0)
 			{
-				st = malloc(j + 1);
-				j = 0;
-				i = k;
-				while (str[i] && find_spliter(str[i], "|<> \t"))
+				t->st = malloc(t->j + 1);
+				t->j = 0;
+				t->i = t->k;
+				while (str[t->i] && find_spliter(str[t->i], "|<> \t"))
 				{
-					if (find_spliter(str[i], "|<>"))
+					if (find_spliter(str[t->i], "|<>"))
 					{
-						st[j] = str[i];
-						j++;
-						i++;
-						if (str[i] == str[i - 1])
+						t->st[t->j] = str[t->i];
+						t->j++;
+						t->i++;
+						if (str[t->i] == str[t->i - 1])
 						{
-							st[j] = str[i];
-							i++;
-							j++;
+							t->st[t->j] = str[t->i];
+							t->i++;
+							t->j++;
 						}
 						break ;
 					}
-					i++;
+					t->i++;
 				}
-				st[j] = 0;
-				if (check == 0)
+				t->st[t->j] = 0;
+				if (t->check == 0)
 				{
-					token = my_token(st);
-					s = ft_lstnew(string_no_quotes(st), token);
-					check = 1;
+					t->token = my_token(t->st);
+					s = ft_lstnew(string_no_quotes(t->st), t->token);
+					t->check = 1;
 				}
 				else
 				{
-					token = my_token(st);
-					ft_lstadd_back(&s, ft_lstnew(string_no_quotes(st), token));
+					t->token = my_token(t->st);
+					ft_lstadd_back(&s, ft_lstnew(string_no_quotes(t->st),
+								t->token));
 				}
 			}
 		}
 	}
-	free(node);
-	free(st);
+	free(t->node);
+	free(t->st);
+    free(t);
 	return (s);
 }

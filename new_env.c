@@ -50,100 +50,103 @@ char	*finnd_valeur(t_mini *env, char *str)
 	return (NULL);
 }
 
+void	initiate_expand(t_expand **vr)
+{
+    (*vr)->i = 0;
+	(*vr)->j = 0;
+	(*vr)->k = 0;
+	(*vr)->quotes = 0;
+	(*vr)->e = 0;
+	(*vr)->h = 0;
+	(*vr)->new_str = NULL;
+	(*vr)->dollar = NULL;
+	(*vr)->var = NULL;
+	(*vr)->valeur = NULL;
+	(*vr)->dollar = malloc(2);
+	(*vr)->dollar[0] = '$';
+	(*vr)->dollar[1] = '\0';
+}
+
 char	*new_expand(char *str, t_mini *env)
 {
-	char	*new_str;
-	char	*var;
-	char	*valeur;
-	char	*dollar;
-	int		quotes;
-	int		i;
-	int		k;
-	int		j;
-	int		e;
-	int		h;
+    t_expand *t;
+    char *str2;
 
-	i = 0;
-	j = 0;
-	k = 0;
-	quotes = 0;
-	e = 0;
-	h = 0;
-	new_str = NULL;
-	dollar = NULL;
-	var = NULL;
-	valeur = NULL;
-	dollar = malloc(2);
-	dollar[0] = '$';
-	dollar[1] = '\0';
-	while (str[i])
+     t = malloc(sizeof(t_expand));
+	initiate_expand(&t);
+	while (str[t->i])
 	{
-		e = 0;
-		if (str[i] == '\'' && quotes == no_quotes)
-			quotes = isingle_quotes;
-		else if (str[i] == '\"' && quotes == no_quotes)
-			quotes = idouble_quotes;
-		else if (str[i] == '\"' && quotes == idouble_quotes)
-			quotes = no_quotes;
-		else if (str[i] == '\'' && quotes == isingle_quotes)
-			quotes = no_quotes;
-		if (str[i] == '$' && quotes != isingle_quotes)
+		t->e = 0;
+		if (str[t->i] == '\'' && t->quotes == no_quotes)
+			t->quotes = isingle_quotes;
+		else if (str[t->i] == '\"' && t->quotes == no_quotes)
+			t->quotes = idouble_quotes;
+		else if (str[t->i] == '\"' && t->quotes == idouble_quotes)
+			t->quotes = no_quotes;
+		else if (str[t->i] == '\'' && t->quotes == isingle_quotes)
+			t->quotes = no_quotes;
+		if (str[t->i] == '$' && t->quotes != isingle_quotes)
 		{
-			while (str[i] == '$')
+			while (str[t->i] == '$')
 			{
-				i++;
-				e++;
+				t->i++;
+				t->e++;
 			}
-			if (str[i] == '?')
+			if (str[t->i] == '?')
 			{
-				var = malloc(2);
-				var[0] = '?';
-				var[1] = '\0';
-				i++;
-				h++;
+				t->var = malloc(2);
+				t->var[0] = '?';
+				t->var[1] = '\0';
+				t->i++;
+				t->h++;
 			}
 			else
 			{
-				k = i;
-				while (!find_spliter1(str[k], "|>< \t\n\'\""))
+				t->k = t->i;
+				while (!find_spliter1(str[t->k], "|>< \t\n\'\""))
 				{
-					k++;
-					j++;
+					t->k++;
+					t->j++;
 				}
-				var = malloc(j + 1);
-				k = i;
-				j = 0;
-				while (!find_spliter1(str[k], "|>< \t\n\'\""))
+				t->var = malloc(t->j + 1);
+				t->k = t->i;
+				t->j = 0;
+				while (!find_spliter1(str[t->k], "|>< \t\n\'\""))
 				{
-					var[j] = str[k];
-					k++;
-					j++;
+					t->var[t->j] = str[t->k];
+					t->k++;
+					t->j++;
 				}
-				var[j] = '\0';
-				k = 0;
+				t->var[t->j] = '\0';
+				t->k = 0;
 			}
-			if ((e % 2 != 0 && e > 2) || (e == 1 && !str[i] && h != 1))
-				new_str = ft_strjoin(new_str, dollar);
-			valeur = finnd_valeur(env, var);
-			new_str = ft_strjoin(new_str, valeur);
-			while (!find_spliter1(str[i], "|>< \t\n\'\""))
-				i++;
+			if ((t->e % 2 != 0 && t->e > 2) || (t->e == 1 && !str[t->i] && t->h != 1))
+				t->new_str = ft_strjoin(t->new_str, t->dollar);
+			t->valeur = finnd_valeur(env, t->var);
+			t->new_str = ft_strjoin(t->new_str, t->valeur);
+			while (!find_spliter1(str[t->i], "|>< \t\n\'\""))
+				t->i++;
 		}
 		else
 		{
-			new_str = ft_strjoin(new_str, (char[]){str[i], 0});
-			i++;
+			t->new_str = ft_strjoin(t->new_str, (char[]){str[t->i], 0});
+			t->i++;
 		}
 	}
-	free(var);
-	free(dollar);
-	if (quotes == idouble_quotes || quotes == isingle_quotes)
+	free(t->var);
+	free(t->dollar);
+    if (t->valeur != NULL)
+        free(t->valeur);
+    str2 = ft_strdup(t->new_str);
+    free(t->new_str);
+    free(t);
+	if (t->quotes == idouble_quotes || t->quotes == isingle_quotes)
 	{
 		ft_write("syntax error exepected quote");
 		return (NULL);
 	}
 	else
-		return (new_str);
+		return (str2);
 }
 
 // char	*handle_quotes(char *str, t_mini *env)

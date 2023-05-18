@@ -6,7 +6,7 @@
 /*   By: rbouissa <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/06 11:54:47 by met-tahe          #+#    #+#             */
-/*   Updated: 2023/05/12 17:50:13 by rbouissa         ###   ########.fr       */
+/*   Updated: 2023/05/17 16:25:25 by rbouissa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,35 @@ typedef struct s_list
 	struct s_list	*next;
 }					t_list;
 
+typedef struct s_var_them
+{
+	int				i;
+	int				e;
+	char			*node;
+	char			*st;
+	int				j;
+	int				k;
+	int				check;
+	int				token;
+	int				quotes;
+	int				check_q;
+
+}					t_var_them;
+
+typedef struct s_expand
+{
+	char			*new_str;
+	char			*var;
+	char			*valeur;
+	char			*dollar;
+	int				quotes;
+	int				i;
+	int				k;
+	int				j;
+	int				e;
+	int				h;
+
+}					t_expand;
 typedef struct s_cmd
 {
 	char			**herdoc;
@@ -62,6 +91,19 @@ typedef struct s_vars
 	int				check;
 	int				stat1;
 }					t_vars;
+
+typedef struct s_split_com
+{
+	char			*cmd;
+	char			*hrd;
+	char			**herdoc;
+	char			**full_cmd;
+	int				check;
+	char			*spliter;
+	int				token;
+	int				token2;
+}					t_split_com;
+
 typedef struct s_global
 {
 	t_list			*m_cmd;
@@ -119,7 +161,7 @@ void				sig_sil(int sig);
 void				rl_replace_line(const char *text, int clear_undo);
 void				multiple_cmd(t_cmd **cmd, t_vars *vars, char **env,
 						t_mini *mini);
-						int	ft_tolower(int c);
+int					ft_tolower(int c);
 /*---------------------------------REDA PART---------------------------------------------*/
 char				**ft_split(char *s, char c);
 int					ft_strcmp(char *s1, char *s2);
@@ -140,17 +182,18 @@ t_cmd				*ft_lstnew_new(char **content, int t, int k, char **her,
 void				ft_lstadd_back_new(t_cmd **lst, t_cmd *new);
 t_cmd				*split_to_commands(t_list *comm);
 int					ther_are_pipe(char *str);
-char *handle_quotes(char *str, t_mini *env);
-int	find_spliter(char s, char *sp);
-char	*ft_itoa(int n);
-int	check_eroor(char *str);
-char	*remove_quotes(t_list *node);
-int size_of_quotes(char *c);
-char	*string_no_quotes(char *str);
-char	*new_expand(char *str, t_mini *env);
-int	find_spliter1(char s, char *sp);
-int	is_digit1(char s);
-int	is_allpha1(char s);
-char	*finnd_valeur(t_mini *env, char *str);
-int	ft_check_cote(char *str, int i);
+char				*handle_quotes(char *str, t_mini *env);
+int					find_spliter(char s, char *sp);
+char				*ft_itoa(int n);
+int					check_eroor(char *str);
+char				*remove_quotes(t_list *node);
+int					size_of_quotes(char *c);
+char				*string_no_quotes(char *str);
+char				*new_expand(char *str, t_mini *env);
+int					find_spliter1(char s, char *sp);
+int					is_digit1(char s);
+int					is_allpha1(char s);
+char				*finnd_valeur(t_mini *env, char *str);
+int					ft_check_cote(char *str, int i);
+void				list_free(t_list *cmd);
 #endif

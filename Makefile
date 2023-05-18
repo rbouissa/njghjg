@@ -1,4 +1,4 @@
-CFLAGS	= -Wall -Wextra -Werror #-fsanitize=address -g
+CFLAGS	= -Wall -Wextra -Werror
 LIBC	= ar -rc
 RM		= rm -f
 NAME	= minishell
@@ -28,7 +28,7 @@ OBJ	= $(SRC:.c=.o)
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	$(CC) $(CFLAGS)  $(OBJ) -o $(NAME)  -lreadline -L /Users/met-tahe/goinfre/homebrew/opt/readline/lib -I /Users/met-tahe/goinfre/homebrew/opt/readline/include 
+	$(CC) $(CFLAGS)  $(OBJ) -o $(NAME)  -lreadline -L /Users/rbouissa/goinfre/homebrew/opt/readline/lib -I /Users/rbouissa/goinfre/homebrew/opt/readline/include 
 
 clean:
 		$(RM) $(OBJ)

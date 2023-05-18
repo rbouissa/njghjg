@@ -1,4 +1,16 @@
 #include "minishell.h"
+void	list_free(t_list *cmd)
+{
+	t_list	*tmp;
+
+	tmp = cmd;
+	while (tmp)
+	{
+		free(tmp->data);
+		tmp = tmp->next;
+	}
+	free(tmp);
+}
 
 void	freestack_last(t_list **stack)
 {
@@ -49,7 +61,8 @@ int	file_numb(t_list *comm)
 			}
 			else if (command->token == 9)
 			{
-				token = open(command->next->data, O_CREAT | O_WRONLY | O_APPEND, 0777);
+				token = open(command->next->data, O_CREAT | O_WRONLY | O_APPEND,
+						0777);
 				if (token == -1)
 				{
 					perror("open");
@@ -105,89 +118,85 @@ int	file_numb2(t_list *comm)
 	return (token);
 }
 
+void	initiate_cmm(t_split_com **vr)
+{
+	(*vr)->cmd = NULL;
+	(*vr)->hrd = NULL;
+	(*vr)->herdoc = NULL;
+	(*vr)->full_cmd = NULL;
+	(*vr)->check = 0;
+	(*vr)->spliter = malloc(2);
+	(*vr)->spliter[0] = 19;
+	(*vr)->spliter[1] = '\0';
+	(*vr)->token = -2;
+	(*vr)->token2 = -2;
+}
+
 t_cmd	*split_to_commands(t_list *comm)
 {
-	char *cmd;
-	char *hrd;
+	t_split_com *t;
 	t_list *command;
-	char **herdoc;
-	char **full_cmd;
-	int check;
-	char *spliter;
 	t_cmd *list;
-	int token;
-	int token2;
-
-	cmd = NULL;
-	hrd = NULL;
-	herdoc = NULL;
-	full_cmd = NULL;
+	t = malloc(sizeof(t_expand));
+	initiate_cmm(&t);
 	command = comm;
-	check = 0;
-	spliter = malloc(2);
-	spliter[0] = 19;
-	spliter[1] = '\0';
-	token = -2;
-	token2 = -2;
+
 	if (!her_pip(command))
 	{
 		while (command)
 		{
-			if (command->token == 2 || command->token == 3|| command->token ==9)
+			if (command->token == 2 || command->token == 3
+				|| command->token == 9)
 			{
 				if (command->token == 2 || command->token == 9)
-					token = file_numb(comm);
+					t->token = file_numb(comm);
 				else if (command->token == 3)
-					token2 = file_numb2(comm);
+					t->token2 = file_numb2(comm);
 				command = command->next->next;
 			}
 			else if (command->token == 4)
 			{
 				command = command->next;
-				hrd = ft_strjoin(hrd, spliter);
-				hrd = ft_strjoin(hrd, command->data);
+				t->hrd = ft_strjoin(t->hrd, t->spliter);
+				t->hrd = ft_strjoin(t->hrd, command->data);
 				command = command->next;
 			}
 			else
 			{
-				cmd = ft_strjoin(cmd, spliter);
-				cmd = ft_strjoin(cmd, command->data);
+				t->cmd = ft_strjoin(t->cmd, t->spliter);
+				t->cmd = ft_strjoin(t->cmd, command->data);
 				command = command->next;
 			}
 		}
-
-		if (hrd != NULL)
+		if (t->hrd != NULL)
 		{
-			if (cmd == NULL)
+			if (t->cmd == NULL)
 			{
-				full_cmd = malloc(sizeof(char *));
-				full_cmd[0] = 0;
-				list = ft_lstnew_new(full_cmd, token, token2, ft_split(hrd, 19),
-						1);
-				token = -2;
-				token2 = -2;
-				//free(full_cmd);
+				t->full_cmd = malloc(sizeof(char *));
+				t->full_cmd[0] = 0;
+				list = ft_lstnew_new(t->full_cmd, t->token, t->token2,
+						ft_split(t->hrd, 19), 1);
+				t->token = -2;
+				t->token2 = -2;
 			}
 			else
 			{
-				list = ft_lstnew_new(ft_split(cmd, 19), token, token2,
-						ft_split(hrd, 19), 1);
-				token = -2;
-				token2 = -2;
+				list = ft_lstnew_new(ft_split(t->cmd, 19), t->token, t->token2,
+						ft_split(t->hrd, 19), 1);
+				t->token = -2;
+				t->token2 = -2;
 			}
 		}
 		else
 		{
-			herdoc = malloc(sizeof(char *));
-			herdoc[0] = 0;
-			list = ft_lstnew_new(ft_split(cmd, 19), token, token2, herdoc, -2);
-			token = -2;
-			token2 = -2;
-			//free(herdoc);
+			t->herdoc = malloc(sizeof(char *));
+			t->herdoc[0] = 0;
+			list = ft_lstnew_new(ft_split(t->cmd, 19), t->token, t->token2,
+					t->herdoc, -2);
+			t->token = -2;
+			t->token2 = -2;
 		}
 	}
-
-	//for multiple pipe
 	else
 	{
 		while (command != NULL)
@@ -195,134 +204,136 @@ t_cmd	*split_to_commands(t_list *comm)
 			if (command->token == 5)
 			{
 				command = command->next;
-				if (check == 0)
+				if (t->check == 0)
 				{
-					check = 1;
-					if (command->token == 2|| command->token ==9)
-						token = file_numb(comm);
+					t->check = 1;
+					if (command->token == 2 || command->token == 9)
+						t->token = file_numb(comm);
 					else if (command->token == 3)
-						token2 = file_numb2(comm);
+						t->token2 = file_numb2(comm);
 					freestack_last(&comm);
-					if (hrd != NULL)
+					if (t->hrd != NULL)
 					{
-						if (cmd == NULL)
+						if (t->cmd == NULL)
 						{
-							full_cmd = malloc(sizeof(char *));
-							full_cmd[0] = 0;
-							list = ft_lstnew_new(full_cmd, token, token2,
-									ft_split(hrd, 19), 1);
+							t->full_cmd = malloc(sizeof(char *));
+							t->full_cmd[0] = 0;
+							list = ft_lstnew_new(t->full_cmd, t->token,
+									t->token2, ft_split(t->hrd, 19), 1);
 						}
 						else
 						{
-							list = ft_lstnew_new(ft_split(cmd, 19), token,
-									token2, ft_split(hrd, 19), 1);
+							list = ft_lstnew_new(ft_split(t->cmd, 19),
+													t->token,
+													t->token2,
+													ft_split(t->hrd, 19),
+													1);
 						}
-						//free(full_cmd);
 					}
 					else
 					{
-						herdoc = malloc(sizeof(char *));
-						herdoc[0] = 0;
-						list = ft_lstnew_new(ft_split(cmd, 19), token, token2,
-								herdoc, -2);
-						//free(herdoc);
+						t->herdoc = malloc(sizeof(char *));
+						t->herdoc[0] = 0;
+						list = ft_lstnew_new(ft_split(t->cmd, 19), t->token,
+								t->token2, t->herdoc, -2);
 					}
-					token = -2;
-					token2 = -2;
+					t->token = -2;
+					t->token2 = -2;
 				}
 				else
 				{
-					if (command->token == 2 || command->token ==9)
-						token = file_numb(comm);
+					if (command->token == 2 || command->token == 9)
+						t->token = file_numb(comm);
 					else if (command->token == 3)
-						token2 = file_numb2(comm);
+						t->token2 = file_numb2(comm);
 					freestack_last(&comm);
-					if (hrd != NULL)
+					if (t->hrd != NULL)
 					{
-						if (cmd != NULL)
-						{
+						if (t->cmd != NULL)
 							ft_lstadd_back_new(&list,
-												ft_lstnew_new(ft_split(cmd, 19),
-																token,
-																token2,
-																ft_split(hrd,
+												ft_lstnew_new(ft_split(t->cmd,
+																		19),
+																t->token,
+																t->token2,
+																ft_split(t->hrd,
 																		19),
 																1));
-						}
 						else
 						{
-							full_cmd = malloc(sizeof(char *));
-							full_cmd[0] = 0;
-							ft_lstadd_back_new(&list, ft_lstnew_new(full_cmd,
-										token, token2, ft_split(hrd, 19), 1));
-							//free(full_cmd);
+							t->full_cmd = malloc(sizeof(char *));
+							t->full_cmd[0] = 0;
+							ft_lstadd_back_new(&list,
+												ft_lstnew_new(t->full_cmd,
+														t->token, t->token2,
+														ft_split(t->hrd, 19),
+														1));
 						}
 					}
 					else
 					{
-						herdoc = malloc(sizeof(char *));
-						herdoc[0] = 0;
-						ft_lstadd_back_new(&list, ft_lstnew_new(ft_split(cmd,
-										19), token, token2, herdoc, 1));
-						//free(herdoc);
+						t->herdoc = malloc(sizeof(char *));
+						t->herdoc[0] = 0;
+						ft_lstadd_back_new(&list,
+											ft_lstnew_new(ft_split(t->cmd, 19),
+													t->token, t->token2,
+													t->herdoc, 1));
 					}
-					token = -2;
-					token2 = -2;
+					t->token = -2;
+					t->token2 = -2;
 				}
-
-				cmd = NULL;
-				hrd = NULL;
+				t->cmd = NULL;
+				t->hrd = NULL;
 			}
-			else if (command->token == 2 || command->token == 3 || command->token == 9)
+			else if (command->token == 2 || command->token == 3
+					|| command->token == 9)
 			{
-				if (command->token == 2 || command->token ==9)
-					token = file_numb(comm);
+				if (command->token == 2 || command->token == 9)
+					t->token = file_numb(comm);
 				else if (command->token == 3)
-					token2 = file_numb2(comm);
+					t->token2 = file_numb2(comm);
 				command = command->next->next;
 			}
 			else if (command->token == 4)
 			{
 				command = command->next;
-				hrd = ft_strjoin(hrd, spliter);
-				hrd = ft_strjoin(hrd, command->data);
+				t->hrd = ft_strjoin(t->hrd, t->spliter);
+				t->hrd = ft_strjoin(t->hrd, command->data);
 				command = command->next;
 			}
 			//this part make a segfaul in the function of get token file
 			else
 			{
-				cmd = ft_strjoin(cmd, spliter);
-				cmd = ft_strjoin(cmd, command->data);
+				t->cmd = ft_strjoin(t->cmd, t->spliter);
+				t->cmd = ft_strjoin(t->cmd, command->data);
 				command = command->next;
 			}
 		}
-		if (hrd != NULL)
+		if (t->hrd != NULL)
 		{
-			if (cmd != NULL)
-				ft_lstadd_back_new(&list, ft_lstnew_new(ft_split(cmd, 19),
-							token, token2, ft_split(hrd, 19), 1));
+			if (t->cmd != NULL)
+				ft_lstadd_back_new(&list, ft_lstnew_new(ft_split(t->cmd, 19),
+							t->token, t->token2, ft_split(t->hrd, 19), 1));
 			else
 			{
-				full_cmd = malloc(sizeof(char *));
-				full_cmd[0] = 0;
-				ft_lstadd_back_new(&list, ft_lstnew_new(full_cmd, token, token2,
-							ft_split(hrd, 19), 1));
-				//free(full_cmd);
+				t->full_cmd = malloc(sizeof(char *));
+				t->full_cmd[0] = 0;
+				ft_lstadd_back_new(&list, ft_lstnew_new(t->full_cmd, t->token,
+							t->token2, ft_split(t->hrd, 19), 1));
 			}
-			token = -2;
-			token2 = -2;
+			t->token = -2;
+			t->token2 = -2;
 		}
 		else
 		{
-			herdoc = malloc(sizeof(char *));
-			herdoc[0] = 0;
-			ft_lstadd_back_new(&list, ft_lstnew_new(ft_split(cmd, 19), token,
-						token2, herdoc, 1));
-			//free(herdoc);
-			token = -2;
-			token2 = -2;
+			t->herdoc = malloc(sizeof(char *));
+			t->herdoc[0] = 0;
+			ft_lstadd_back_new(&list, ft_lstnew_new(ft_split(t->cmd, 19),
+						t->token, t->token2, t->herdoc, 1));
+			t->token = -2;
+			t->token2 = -2;
 		}
 	}
-	free(spliter);
+	free(t->spliter);
+	list_free(comm);
 	return (list);
 }
